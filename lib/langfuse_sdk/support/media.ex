@@ -39,20 +39,8 @@ defmodule LangfuseSdk.Support.Media do
       Enum.map(content_entries, fn entry ->
         case entry do
           %{"type" => "image_url", "image_url" => %{"url" => url}} ->
-            decode_info = decode_info(url)
-
-            media_token =
-              get_media_token(
-                generation_map.trace_id,
-                generation_map.id,
-                Atom.to_string(key),
-                decode_info
-              )
-              put_in(entry, ["image_url", "url"], media_token)
-
-
-            %{"type" => "input_audio", "input_audio" => %{"data" => content}} ->
-              decode_info = decode_info(content)
+            if String.starts_with?(url, "data:") do
+              decode_info = decode_info(url)
 
               media_token =
                 get_media_token(
@@ -61,12 +49,30 @@ defmodule LangfuseSdk.Support.Media do
                   Atom.to_string(key),
                   decode_info
                 )
-                put_in(entry, ["input_audio", "data"], media_token)
+
+              put_in(entry, ["image_url", "url"], media_token)
+            else
+              entry
+            end
+
+          %{"type" => "input_audio", "input_audio" => %{"data" => content}} ->
+            decode_info = decode_info(content)
+
+            media_token =
+              get_media_token(
+                generation_map.trace_id,
+                generation_map.id,
+                Atom.to_string(key),
+                decode_info
+              )
+
+            put_in(entry, ["input_audio", "data"], media_token)
 
           entry ->
             entry
         end
       end)
+
     put_in(content_item, ["content"], updated_entries)
   end
 
