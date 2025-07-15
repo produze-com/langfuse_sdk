@@ -22,12 +22,19 @@ defmodule LangfuseSdk.Tracing.Trace do
     :parent_observation_id
   ]
 
-  def new(opts \\ []) do
-    Trace
-    |> struct!(opts)
+  def new(opts \\ [])
+
+  def new(%Trace{} = trace) do
+    trace
     |> Value.force_new(:id, UUID.uuid4())
     |> Value.force_new(:timestamp, DateTime.utc_now())
     |> Value.force_new(:public, false)
+  end
+
+  def new(opts) do
+    Trace
+    |> struct!(opts)
+    |> new()
   end
 
   def cast_params(params, :list) do
