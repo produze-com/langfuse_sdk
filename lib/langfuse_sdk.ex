@@ -92,6 +92,11 @@ defmodule LangfuseSdk do
   """
   def update(item)
 
+  def update(%LangfuseSdk.Tracing.Trace{} = trace) do
+    trace_event = LangfuseSdk.Ingestor.to_event(trace, :update)
+    LangfuseSdk.Ingestor.ingest_payload(trace_event)
+  end
+
   def update(%LangfuseSdk.Tracing.Span{} = span) do
     span_event = LangfuseSdk.Ingestor.to_event(span, :update)
     LangfuseSdk.Ingestor.ingest_payload(span_event)
